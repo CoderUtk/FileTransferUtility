@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller=".FileTransferUIController">
+    <stylesheets>
+        <URL value="@filetransferui.css" />
+    </stylesheets>
+   <children>
+      <TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab closable="false" text="UPLOAD">
+            <content>
+              <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="376.0" prefWidth="583.0">
+                     <children>
+                        <Pane layoutY="40.0" prefHeight="75.0" prefWidth="600.0" visible="false">
+                           <children>
+                              <Label layoutX="54.0" layoutY="29.0" prefHeight="17.0" prefWidth="112.0" text="Connection :" />
+                              <ChoiceBox layoutX="190.0" layoutY="25.0" prefHeight="25.0" prefWidth="220.0" />
+                           </children>
+                        </Pane>
+                        <Separator layoutX="-7.0" layoutY="118.0" prefHeight="11.0" prefWidth="607.0" />
+                        <RadioButton layoutX="60.0" layoutY="14.0" mnemonicParsing="false" text="Select Connection" />
+                        <RadioButton layoutX="359.0" layoutY="14.0" mnemonicParsing="false" text="Add Connection" />
+                        <Label layoutX="32.0" layoutY="138.0" prefHeight="17.0" prefWidth="77.0" text="Source File : " />
+                        <TextField layoutX="119.0" layoutY="134.0" prefHeight="25.0" prefWidth="444.0" />
+                        <Label layoutX="30.0" layoutY="177.0" text="Destination :" />
+                        <TextField layoutX="119.0" layoutY="173.0" prefHeight="25.0" prefWidth="443.0" />
+                        <Button layoutX="563.0" layoutY="134.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="31.0" text="Browse" />
+                        <ProgressBar layoutY="308.0" prefHeight="61.0" prefWidth="600.0" progress="0.0" />
+                        <Button layoutX="271.0" layoutY="245.0" mnemonicParsing="false" text="UPLOAD" />
+                        <TextField layoutX="23.0" layoutY="53.0" prefHeight="25.0" prefWidth="115.0" promptText="Name" />
+                        <TextField layoutX="426.0" layoutY="53.0" prefHeight="25.0" prefWidth="40.0" promptText="Port" />
+                        <TextField layoutX="166.0" layoutY="53.0" prefHeight="25.0" prefWidth="105.0" promptText="Username" />
+                        <TextField layoutX="297.0" layoutY="53.0" prefHeight="25.0" prefWidth="107.0" promptText="Host" />
+                        <Separator layoutX="-2.0" layoutY="38.0" prefHeight="4.0" prefWidth="606.0" />
+                        <PasswordField layoutX="23.0" layoutY="90.0" prefHeight="25.0" prefWidth="115.0" promptText="Password" />
+                        <ChoiceBox layoutX="512.0" layoutY="78.0" prefHeight="25.0" prefWidth="57.0" />
+                        <Label layoutX="512.0" layoutY="57.0" text="Type :" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab closable="false" text="DOWNLOAD">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="366.0" prefWidth="585.0" />
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>
