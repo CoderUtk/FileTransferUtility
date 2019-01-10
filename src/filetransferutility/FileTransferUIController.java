@@ -4,6 +4,7 @@ import com.jcraft.jsch.JSchException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -67,6 +68,7 @@ public class FileTransferUIController {
     Pane addConnectionPane = new Pane();
     @FXML
     ProgressBar uploadProgressBar = new ProgressBar();
+
     @FXML
     public void initialize() {
         serverType.setItems(FXCollections.observableArrayList("Local", "Cloud"));
@@ -92,15 +94,15 @@ public class FileTransferUIController {
         controllerStage.setTitle("Choose a File");
         sourceFile.setText(selectedFile.toString());
     }
-    
-    public void key_file_chooser(ActionEvent e){
+
+    public void key_file_chooser(ActionEvent e) {
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("All Files", "*"));
         selectedFile = fileChooser.showOpenDialog(controllerStage);
         controllerStage.setTitle("Choose a File");
         keyFileLocation.setText(selectedFile.toString());
     }
-    
+
     public void add_new_connection(ActionEvent e) {
         selectConnectionRbtn.setToggleGroup(connectionToggleGroup);
         addConnectionRbtn.setToggleGroup(connectionToggleGroup);
@@ -115,20 +117,32 @@ public class FileTransferUIController {
         addConnectionPane.setVisible(false);
     }
 
-    public void upload(ActionEvent e) throws IOException, FileNotFoundException, ParseException, JSchException{
-         if (addConnectionRbtn.isSelected()) {
+    public void upload(ActionEvent e) throws IOException, FileNotFoundException, ParseException, JSchException {
+        uploadProgressBar.setProgress(0.0);
+        FileTransfer upload_file_transfer = new FileTransfer(uploadProgressBar);
+        if (addConnectionRbtn.isSelected()) {
             try {
                 System.out.println(connectionName.getText());
-                fileTransfer.add_connection(serverType.getValue().toString(),connectionName.getText(), username.getText(), host.getText(), port.getText(), password.getText(),keyFileLocation.getText());
+                upload_file_transfer.add_connection(serverType.getValue().toString(), connectionName.getText(), username.getText(), host.getText(), port.getText(), password.getText(), keyFileLocation.getText());
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
         }
         if (selectConnectionRbtn.isSelected()) {
-            fileTransfer.set_connections(connectionSelection.getValue().toString());
+            upload_file_transfer.set_connections(connectionSelection.getValue().toString());
         }
-        fileTransfer.connect();
-        fileTransfer.upload(sourceFile.getText(),destination.getText(), uploadProgressBar);
+        upload_file_transfer.connect();
+        System.out.println("From UI: " + Thread.currentThread());
+        new Thread(() -> {
+            upload_file_transfer.upload(sourceFile.getText(), destination.getText());
+        }).start();
+        System.out.println("From UI: " + Thread.currentThread());
+
     }
-   
+
+    @FXML
+    public void exitApplication(ActionEvent event) {
+        Platform.exit();
+    }
+
 }

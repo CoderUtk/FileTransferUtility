@@ -11,6 +11,7 @@ import com.jcraft.jsch.UserInfo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import javafx.application.Platform;
 import javafx.scene.control.ProgressBar;
 
 public class FileTransfer extends Connections {
@@ -19,6 +20,14 @@ public class FileTransfer extends Connections {
     public Channel channel;
     public int file_size;
     public boolean upload_complete;
+    ProgressBar progress_bar;
+
+    public FileTransfer() {
+    }
+
+    public FileTransfer(ProgressBar upload_progress_bar) {
+        this.progress_bar = upload_progress_bar;
+    }
 
     public void connect() throws JSchException {
         JSch jsch = new JSch();
@@ -68,22 +77,26 @@ public class FileTransfer extends Connections {
         }
     }
 
-    public void upload(String Source, String Destination, ProgressBar progressbar) {
+    public void upload(String Source, String Destination) {
         try {
             System.out.println("Uploading " + Source + "\nto " + Destination + "\n");
-            progressbar.setProgress(0.0);
+            Boolean new_upload = true;
             upload_complete = false;
             int put_status_mode = ChannelSftp.OVERWRITE;
             File f = new File(Source);
             ChannelSftp channelSftp = null;
             SftpATTRS attrs = null;
-            //progressbar = new ProgressBar();
             while (!upload_complete) {
                 file_size = 0;
                 try {
                     channel = session.openChannel("sftp");
-                    channel.connect();
+                    if (!channel.isConnected()) {
+                        channel.connect();
+                    }
                     channelSftp = (ChannelSftp) channel;
+                    if (Destination.contains("$HOME")) {
+                        Destination = Destination.replace("$HOME", channelSftp.getHome());
+                    }
                     attrs = channelSftp.lstat(Destination);
                     if (attrs == null) {
                         channelSftp.mkdir(Destination);
@@ -94,20 +107,31 @@ public class FileTransfer extends Connections {
                         file_size = (int) attrs.getSize();
                     } catch (SftpException ex) {
                     }
-                    //progressbar.setValue(file_size);
+                    //total_progress = (float) file_size / f.length();
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException ex) {
+                        System.out.println(ex);
+                    }
                     channelSftp.put(new FileInputStream(f), f.getName(), new SftpProgressMonitor() {
-                        long uploadedBytes = file_size;
+                        long uploadedBytes;
 
                         @Override
                         public void init(int i, String Source, String Destination, long bytes) {
-                            System.out.println("in init()");
+                            uploadedBytes = file_size;
                         }
 
                         @Override
                         public boolean count(long bytes) {
                             uploadedBytes += bytes;
-                            //progressbar.setProgress(0.5);
-                            progressbar.setProgress(uploadedBytes/file_size);
+                            Platform.runLater(() -> {
+                                progress_bar.setProgress((double) uploadedBytes / (double) f.length());
+                            });
+                            try {
+                                Thread.sleep(1);
+                            } catch (InterruptedException ex) {
+                                System.out.println(ex);
+                            }
                             return (true);
                         }
 
@@ -117,18 +141,33 @@ public class FileTransfer extends Connections {
                     }, put_status_mode);
                 } catch (JSchException | SftpException ex) {
                     if (ex.toString().contains("session is down") || ex.toString().contains("socket write error”")) {
+                        new_upload = false;
                         put_status_mode = ChannelSftp.RESUME;
-                        connect();
+                        reconnect();
                     }
                 }
-                if (file_size == f.length() || progressbar.getProgress()== 1.0){
+
+                if (file_size == f.length() || progress_bar.getProgress() >= 1.0) {
                     upload_complete = true;
                     //frame.dispose();
                     System.out.println("Upload Complete");
                 }
             }
-        } catch (JSchException | FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public void reconnect() {
+        while (!channel.isConnected()) {
+            try {
+                System.out.println("Reconnecting..");
+                connect();
+                channel = session.openChannel("sftp");
+                channel.connect();
+            } catch (JSchException e) {
+                System.out.println(e);
+            }
         }
     }
 }
