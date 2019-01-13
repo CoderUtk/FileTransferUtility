@@ -124,9 +124,7 @@ public class FileTransfer extends Connections {
                         @Override
                         public boolean count(long bytes) {
                             uploadedBytes += bytes;
-                            Platform.runLater(() -> {
-                                progress_bar.setProgress((double) uploadedBytes / (double) f.length());
-                            });
+                            Platform.runLater(() -> progress_bar.setProgress((double) uploadedBytes / (double) f.length()));
                             try {
                                 Thread.sleep(1);
                             } catch (InterruptedException ex) {

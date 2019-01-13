@@ -11,6 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
@@ -68,6 +69,8 @@ public class FileTransferUIController {
     Pane addConnectionPane = new Pane();
     @FXML
     ProgressBar uploadProgressBar = new ProgressBar();
+    @FXML
+    Label progressLabel = new Label();
 
     @FXML
     public void initialize() {
@@ -131,6 +134,7 @@ public class FileTransferUIController {
         if (selectConnectionRbtn.isSelected()) {
             upload_file_transfer.set_connections(connectionSelection.getValue().toString());
         }
+        progressLabel.textProperty().bind(uploadProgressBar.progressProperty().multiply(100).asString("%.2f").concat(" %"));
         upload_file_transfer.connect();
         System.out.println("From UI: " + Thread.currentThread());
         new Thread(() -> {
