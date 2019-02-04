@@ -141,7 +141,7 @@ public class FileTransferUIController {
             upload_file_transfer.upload(sourceFile.getText(), destination.getText());
         }).start();
         System.out.println("From UI: " + Thread.currentThread());
-
+        
     }
 
     @FXML

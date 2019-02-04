@@ -21,10 +21,10 @@ public class FileTransferUI extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("resources\\FileTransferUI.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("resources/FileTransferUI.fxml"));
         Scene scene = new Scene(root);
         try{
-        primaryStage.getIcons().add(new Image(FileTransferUI.class.getResourceAsStream("resources\\icon.png ")));
+        primaryStage.getIcons().add(new Image(FileTransferUI.class.getResourceAsStream("resources/icon.png")));
         }
         catch(Exception e){
             e.printStackTrace();

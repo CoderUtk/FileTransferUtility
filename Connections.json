@@ -1,1 +1,11 @@
-{"qc3":{"ServerType":"Local","Username":"qc3","Port":"22","Passphrase":null,"KeyFile":null,"HostName":"10.65.18.110","Password":"qc3_solution"},"bevalpsm2":{"ServerType":"Local","Username":"bevalpsm2","Port":"22","Passphrase":null,"KeyFile":null,"HostName":"10.65.18.164","Password":"bevaqc@456"},"qc8":{"ServerType":"Local","Username":"qc8","Port":"22","Passphrase":null,"KeyFile":null,"HostName":"10.65.18.110","Password":"vistaaar@123"},"Utkarsh":{"ServerType":"Local","Username":"umagrawal","Port":"22","Passphrase":null,"KeyFile":null,"HostName":"10.65.18.164","Password":"1Super@deadpooL23"}}
+{
+	"PSM_315_AWS": {
+		"ServerType": "Cloud",
+		"Username": "cloud_as1",
+		"Port": "4212",
+		"Passphrase": "",
+		"KeyFile": "utkarsh_latest",
+		"HostName": "shrd-baod-bast-2.vistaarcloud.com",
+		"Password": null
+	}
+}

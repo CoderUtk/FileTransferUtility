@@ -109,7 +109,7 @@ public class FileTransfer extends Connections {
                     }
                     //total_progress = (float) file_size / f.length();
                     try {
-                        Thread.sleep(1);
+                        Thread.sleep(5);
                     } catch (InterruptedException ex) {
                         System.out.println(ex);
                     }
@@ -126,7 +126,7 @@ public class FileTransfer extends Connections {
                             uploadedBytes += bytes;
                             Platform.runLater(() -> progress_bar.setProgress((double) uploadedBytes / (double) f.length()));
                             try {
-                                Thread.sleep(1);
+                                Thread.sleep(5);
                             } catch (InterruptedException ex) {
                                 System.out.println(ex);
                             }
