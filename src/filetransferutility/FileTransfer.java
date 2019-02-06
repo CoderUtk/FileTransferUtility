@@ -104,7 +104,7 @@ public class FileTransfer extends Connections {
                     channelSftp.cd(Destination);
                     try {
                         attrs = channelSftp.lstat(Destination + "/" + f.getName());
-                        file_size = (int) attrs.getSize();
+                        file_size = new_upload ? 0 : (int) attrs.getSize();
                     } catch (SftpException ex) {
                     }
                     //total_progress = (float) file_size / f.length();
@@ -120,13 +120,12 @@ public class FileTransfer extends Connections {
                         public void init(int i, String Source, String Destination, long bytes) {
                             uploadedBytes = file_size;
                         }
-
                         @Override
                         public boolean count(long bytes) {
                             uploadedBytes += bytes;
                             Platform.runLater(() -> progress_bar.setProgress((double) uploadedBytes / (double) f.length()));
                             try {
-                                Thread.sleep(5);
+                                Thread.sleep(2);
                             } catch (InterruptedException ex) {
                                 System.out.println(ex);
                             }
@@ -148,7 +147,7 @@ public class FileTransfer extends Connections {
                 if (file_size == f.length() || progress_bar.getProgress() >= 1.0) {
                     upload_complete = true;
                     //frame.dispose();
-                    System.out.println("Upload Complete");
+                    Platform.runLater(() -> progress_bar.setProgress(1.0));
                 }
             }
         } catch (FileNotFoundException ex) {

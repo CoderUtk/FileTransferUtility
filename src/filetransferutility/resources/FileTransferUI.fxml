@@ -36,14 +36,14 @@
                         <Separator layoutX="-2.0" layoutY="38.0" prefHeight="4.0" prefWidth="606.0" />
                         <Pane fx:id="addConnectionPane" layoutY="38.0" prefHeight="84.0" prefWidth="600.0" visible="false">
                            <children>
-                              <TextField fx:id="keyFileLocation" layoutX="166.0" layoutY="43.0" prefHeight="25.0" prefWidth="237.0" promptText="Key File Location" />
+                              <TextField fx:id="keyFileLocation" layoutX="166.0" layoutY="43.0" prefHeight="25.0" prefWidth="237.0" promptText="Key File Location" visible="false" />
                               <ChoiceBox fx:id="serverType" layoutX="495.0" layoutY="31.0" prefHeight="25.0" prefWidth="73.0" />
                               <TextField fx:id="username" layoutX="166.0" layoutY="5.0" prefHeight="25.0" prefWidth="105.0" promptText="Username" />
                               <TextField fx:id="port" layoutX="432.0" layoutY="5.0" prefHeight="25.0" prefWidth="40.0" promptText="Port" />
                               <TextField fx:id="connectionName" layoutX="25.0" layoutY="5.0" prefHeight="25.0" prefWidth="115.0" promptText="Name" />
                               <TextField fx:id="host" layoutX="296.0" layoutY="5.0" prefHeight="25.0" prefWidth="107.0" promptText="Host" />
                               <PasswordField fx:id="password" layoutX="25.0" layoutY="43.0" prefHeight="25.0" prefWidth="115.0" promptText="Password" />
-                              <Button fx:id="keyFileChooser" layoutX="407.0" layoutY="44.0" mnemonicParsing="false" onAction="#key_file_chooser" prefHeight="11.0" prefWidth="25.0" text="Button" />
+                              <Button fx:id="keyFileChooser" layoutX="407.0" layoutY="44.0" mnemonicParsing="false" onAction="#key_file_chooser" prefHeight="11.0" prefWidth="25.0" text="Button" visible="false" />
                               <Label layoutX="499.0" layoutY="9.0" text="Type :" />
                            </children>
                         </Pane>
@@ -51,6 +51,7 @@
                            <font>
                               <Font name="System Bold" size="15.0" />
                            </font></Label>
+                        <Label fx:id="statusMessage" layoutX="71.0" layoutY="249.0" prefHeight="17.0" prefWidth="107.0" />
                      </children>
                   </AnchorPane>
             </content>

@@ -4,7 +4,7 @@
 #define MyAppName "FileTransfer"
 #define MyAppVersion "1.0"
 #define MyAppPublisher "Vistaar"
-#define MyAppExeName "FileTransferUtility.jar"
+#define MyAppExeName "FileTransfer.bat"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -29,7 +29,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
-
  
 
 [Files]
@@ -40,6 +39,8 @@ Source: "manifest.mf"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 Source: "build.xml"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 Source: "Connections.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Keys\*"; DestDir: "{app}\Keys"; Flags: ignoreversion recursesubdirs
+Source: "puttygen.exe"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+Source: "FileTransfer.bat"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

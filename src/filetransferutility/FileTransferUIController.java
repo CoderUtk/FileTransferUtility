@@ -71,6 +71,8 @@ public class FileTransferUIController {
     ProgressBar uploadProgressBar = new ProgressBar();
     @FXML
     Label progressLabel = new Label();
+    @FXML
+    Label statusMessage = new Label();
 
     @FXML
     public void initialize() {
@@ -79,6 +81,18 @@ public class FileTransferUIController {
         serverType.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
             System.out.println(serverType.getItems().get((Integer) number2));
             fileTransfer.c_serverType = (String) serverType.getItems().get((Integer) number2);
+            switch (fileTransfer.c_serverType) {
+                case "Local":
+                    password.setPromptText("Password");
+                    keyFileLocation.setVisible(false);
+                    keyFileChooser.setVisible(false);
+                    break;
+                case "Cloud":
+                    password.setPromptText("Passphrase");
+                    keyFileLocation.setVisible(true);
+                    keyFileChooser.setVisible(true);
+                    break;
+            }
         });
         connectionSelection.setItems(FXCollections.observableArrayList(fileTransfer.connections));
 //        connectionSelection.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
@@ -135,13 +149,18 @@ public class FileTransferUIController {
             upload_file_transfer.set_connections(connectionSelection.getValue().toString());
         }
         progressLabel.textProperty().bind(uploadProgressBar.progressProperty().multiply(100).asString("%.2f").concat(" %"));
-        upload_file_transfer.connect();
-        System.out.println("From UI: " + Thread.currentThread());
-        new Thread(() -> {
-            upload_file_transfer.upload(sourceFile.getText(), destination.getText());
-        }).start();
-        System.out.println("From UI: " + Thread.currentThread());
-        
+        statusMessage.setText("Connecting.....");
+        try {
+            upload_file_transfer.connect();
+            statusMessage.setText("Connected");
+            //System.out.println("From UI: " + Thread.currentThread());
+            new Thread(() -> {
+                upload_file_transfer.upload(sourceFile.getText(), destination.getText());
+            }).start();
+            System.out.println("From UI: " + Thread.currentThread());
+        } catch (JSchException je) {
+            statusMessage.setText(("Unable to connect. Please Check credentials and try again"));
+        }
     }
 
     @FXML

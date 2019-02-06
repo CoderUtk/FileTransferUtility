@@ -1,11 +1,1 @@
-{
-	"PSM_315_AWS": {
-		"ServerType": "Cloud",
-		"Username": "cloud_as1",
-		"Port": "4212",
-		"Passphrase": "",
-		"KeyFile": "utkarsh_latest",
-		"HostName": "shrd-baod-bast-2.vistaarcloud.com",
-		"Password": null
-	}
-}
+{}

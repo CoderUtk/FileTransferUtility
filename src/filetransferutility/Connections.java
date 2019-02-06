@@ -66,7 +66,7 @@ public class Connections extends FileTransferUI {
             c_passphrase = passkey;
             c_keyFileLocation = keyFile;
             key_file = new File(c_keyFileLocation);
-            FileUtils.copyFile(key_file, new File("Keys\\" + key_file.getName()));
+            FileUtils.copyFileToDirectory(key_file,new File("Keys//"));
             c_keyFileLocation = key_file.getName();
         }
         System.out.println(c_connectionName);
