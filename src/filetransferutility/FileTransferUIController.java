@@ -1,9 +1,12 @@
 package filetransferutility;
 
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -51,13 +54,17 @@ public class FileTransferUIController extends FXMLComponents {
                 new FileChooser.ExtensionFilter("All Files", "*"));
         selectedFile = fileChooser.showOpenDialog(controllerStage);
         controllerStage.setTitle("Choose a File");
-        sourceFile.setText(selectedFile.toString());
+        localSource.setText(selectedFile.toString());
     }
 
     public void open_folder_chooser(ActionEvent e) {
-        selectedDirectory = directoryChooser.showDialog(controllerStage);
         controllerStage.setTitle("Choose a Folder");
-        sourceFile.setText(selectedDirectory.toString());
+        selectedDirectory = directoryChooser.showDialog(controllerStage);
+        if (tabPane.getSelectionModel().getSelectedItem().getText().equals("UPLOAD")) {
+            localSource.setText(selectedDirectory.toString());
+        } else {
+            localDestination.setText(selectedDirectory.toString());
+        }
     }
 
     public void key_file_chooser(ActionEvent e) {
@@ -83,41 +90,65 @@ public class FileTransferUIController extends FXMLComponents {
     }
 
     public void upload(ActionEvent e) throws IOException, FileNotFoundException, ParseException, JSchException {
-        uploadProgressBar.setProgress(0.0);
-        FileTransfer upload_file_transfer = new FileTransfer(uploadProgressBar);
-        if (addConnectionRbtn.isSelected()) {
-            try {
-                System.out.println(connectionName.getText());
-                upload_file_transfer.add_connection(serverType.getValue().toString(), connectionName.getText(), username.getText(), host.getText(), port.getText(), password.getText(), keyFileLocation.getText());
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
-        }
-        if (selectConnectionRbtn.isSelected()) {
-            upload_file_transfer.set_connections(connectionSelection.getValue().toString());
-        }
-        progressLabel.textProperty().bind(uploadProgressBar.progressProperty().multiply(100).asString("%.2f").concat(" %"));
-        statusMessage.setText("Connecting.....");
+        FileTransfer upload_file_transfer = initiateTransfer();
+        uploadStatusMessage.setText("Connecting.....");
         try {
             upload_file_transfer.connect();
-            statusMessage.setText("Connected");
-            //System.out.println("From UI: " + Thread.currentThread());
+            uploadStatusMessage.setText("Connected");
             new Thread(() -> {
                 try {
-                    upload_file_transfer.upload(sourceFile.getText(), destination.getText());
+                    upload_file_transfer.upload(localSource.getText(), serverDestination.getText());
                 } catch (IOException | JSchException ex) {
                     ex.printStackTrace();
                 }
             }).start();
             System.out.println("From UI: " + Thread.currentThread());
         } catch (JSchException je) {
-            statusMessage.setText(("Unable to connect. Please Check credentials and try again"));
+            uploadStatusMessage.setText(("Unable to connect. Please Check credentials and try again"));
         }
+    }
+
+    public void download(ActionEvent e) throws IOException, FileNotFoundException, ParseException {
+        FileTransfer download_file_transfer = initiateTransfer();
+        downloadStatusMessage.setText("Connecting.....");
+        try {
+            download_file_transfer.connect();
+            downloadStatusMessage.setText("Connected");
+            new Thread(() -> {
+                try {
+                    download_file_transfer.download(serverSource.getText(), localDestination.getText());
+                } catch (JSchException | SftpException ex) {
+                    ex.printStackTrace();
+                }
+            }).start();
+        } catch (JSchException je) {
+            uploadStatusMessage.setText(("Unable to connect. Please Check credentials and try again"));
+        }
+    }
+
+    public FileTransfer initiateTransfer() throws IOException, FileNotFoundException, ParseException {
+        ProgressBar.setProgress(0.0);
+        FileTransfer file_transfer = new FileTransfer(ProgressBar);
+        if (addConnectionRbtn.isSelected()) {
+            try {
+                System.out.println(connectionName.getText());
+                file_transfer.add_connection(serverType.getValue().toString(), connectionName.getText(), username.getText(), host.getText(), port.getText(), password.getText(), keyFileLocation.getText());
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+        if (selectConnectionRbtn.isSelected()) {
+            file_transfer.set_connections(connectionSelection.getValue().toString());
+        }
+        progressLabel.textProperty().bind(ProgressBar.progressProperty().multiply(100).asString("%.2f").concat(" %"));
+        return file_transfer;
     }
 
     @FXML
     public void exitApplication(ActionEvent event) {
         Platform.exit();
+        ProgressBar.setProgress(0.0);
+        FileTransfer downloadFileTransfer = new FileTransfer(ProgressBar);
     }
 
 }

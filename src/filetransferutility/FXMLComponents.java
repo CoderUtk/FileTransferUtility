@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -41,9 +42,9 @@ public class FXMLComponents {
     @FXML
     TextField keyFileLocation = new TextField();
     @FXML
-    TextField sourceFile = new TextField();
+    TextField localSource = new TextField();
     @FXML
-    TextField destination = new TextField();
+    TextField serverDestination = new TextField();
     @FXML
     PasswordField password = new PasswordField();
     @FXML
@@ -55,6 +56,8 @@ public class FXMLComponents {
     @FXML
     Button uploadBtn = new Button();
     @FXML
+    Button downloadBtn = new Button();
+    @FXML
     ChoiceBox serverType = new ChoiceBox();
     @FXML
     ChoiceBox connectionSelection = new ChoiceBox();
@@ -65,10 +68,19 @@ public class FXMLComponents {
     @FXML
     Pane addConnectionPane = new Pane();
     @FXML
-    ProgressBar uploadProgressBar = new ProgressBar();
+    ProgressBar ProgressBar = new ProgressBar();
     @FXML
     Label progressLabel = new Label();
     @FXML
-    Label statusMessage = new Label();
-
+    Label uploadStatusMessage = new Label();
+    @FXML
+    Label downloadStatusMessage = new Label();
+    @FXML
+    TextField localDestination = new TextField();
+    @FXML
+    TextField serverSource = new TextField();
+    @FXML
+    Button destinationFolderChooser = new Button();
+    @FXML
+    TabPane tabPane = new TabPane();
 }

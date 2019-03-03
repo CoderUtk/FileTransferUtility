@@ -3,5 +3,10 @@
  */
 
 .mainFxmlClass {
-
+    .tab {
+        -fx-pref-width: 250
+    } 
+    .tab {
+        -fx-pref-width: 300
+    } 
 }

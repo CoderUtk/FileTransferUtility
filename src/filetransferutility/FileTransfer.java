@@ -25,13 +25,14 @@ public class FileTransfer extends Connections {
     public Channel channel;
     public int file_size;
     public boolean upload_complete;
+    public boolean download_complete;
     ProgressBar progress_bar;
 
     public FileTransfer() {
     }
 
-    public FileTransfer(ProgressBar upload_progress_bar) {
-        this.progress_bar = upload_progress_bar;
+    public FileTransfer(ProgressBar progress_bar) {
+        this.progress_bar = progress_bar;
     }
 
     public void connect() throws JSchException {
@@ -82,7 +83,7 @@ public class FileTransfer extends Connections {
         }
     }
 
-    public void upload(String Source, String Destination) throws IOException, JSchException {
+    void upload(String Source, String Destination) throws IOException, JSchException {
         System.out.println("Uploading " + Source + "\nto " + Destination + "\n");
         File f = new File(Source);
         if (f.isDirectory()) {
@@ -92,7 +93,7 @@ public class FileTransfer extends Connections {
         }
     }
 
-    public void uploadFileToServer(String Source, String Destination) {
+    void uploadFileToServer(String Source, String Destination) {
         try {
             Boolean new_upload = true;
             upload_complete = false;
@@ -124,7 +125,7 @@ public class FileTransfer extends Connections {
                     }
                     //total_progress = (float) file_size / f.length();
                     try {
-                        Thread.sleep(5);
+                        Thread.sleep(2);
                     } catch (InterruptedException ex) {
                         System.out.println(ex);
                     }
@@ -218,6 +219,30 @@ public class FileTransfer extends Connections {
         }
 
         return true;
+    }
+
+    void download(String Source, String Destination) throws SftpException, JSchException {
+        System.out.println("Downloading " + Source + " to " + Destination);
+        ChannelSftp channelSftp = null;
+        SftpATTRS attrs = null;
+        Boolean new_download = true;
+        download_complete = false;
+        while (download_complete) {
+            try {
+                channel = session.openChannel("sftp");
+                if (!channel.isConnected()) {
+                    channel.connect();
+                }
+                channelSftp = (ChannelSftp) channel;
+                channelSftp.get(Source, Destination);
+            } catch (JSchException | SftpException ex) {
+                if (ex.toString().contains("session is down") || ex.toString().contains("socket write error”")) {
+                    new_download = false;
+                    reconnect();
+                }
+                download_complete = true;
+            }
+        }
     }
 
     public void reconnect() {
