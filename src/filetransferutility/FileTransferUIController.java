@@ -9,75 +9,24 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.Pane;
+import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import org.json.simple.parser.ParseException;
 
-public class FileTransferUIController {
+public class FileTransferUIController extends FXMLComponents {
 
     //Connections connection = new Connections();
     FileTransfer fileTransfer = new FileTransfer();
-    FileChooser fileChooser = new FileChooser();
     File selectedFile;
-    Stage controllerStage = new Stage();
-    @FXML
-    Pane pane = new Pane();
-    @FXML
-    RadioButton selectConnectionRbtn = new RadioButton();
-    @FXML
-    RadioButton addConnectionRbtn = new RadioButton();
-    @FXML
-    TextField connectionName = new TextField();
-    @FXML
-    TextField username = new TextField();
-    @FXML
-    TextField host = new TextField();
-    @FXML
-    TextField port = new TextField();
-    @FXML
-    TextField keyFileLocation = new TextField();
-    @FXML
-    TextField sourceFile = new TextField();
-    @FXML
-    TextField destination = new TextField();
-    @FXML
-    PasswordField password = new PasswordField();
-    @FXML
-    Button sourceFileChooser = new Button();
-    @FXML
-    Button keyFileChooser = new Button();
-    @FXML
-    Button uploadBtn = new Button();
-    @FXML
-    ChoiceBox serverType = new ChoiceBox();
-    @FXML
-    ChoiceBox connectionSelection = new ChoiceBox();
-    @FXML
-    ToggleGroup connectionToggleGroup = new ToggleGroup();
-    @FXML
-    Pane selectConnectionPane = new Pane();
-    @FXML
-    Pane addConnectionPane = new Pane();
-    @FXML
-    ProgressBar uploadProgressBar = new ProgressBar();
-    @FXML
-    Label progressLabel = new Label();
-    @FXML
-    Label statusMessage = new Label();
+    File selectedDirectory;
 
     @FXML
+    @SuppressWarnings("unchecked")
     public void initialize() {
+        sourceFileChooser.setGraphic(new ImageView(fileChooserIcon));
+        sourceFolderChooser.setGraphic(new ImageView(folderChooserIcon));
         serverType.setItems(FXCollections.observableArrayList("Local", "Cloud"));
-        serverType.setValue((String) "Local");
+        serverType.setValue("Local");
         serverType.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
             System.out.println(serverType.getItems().get((Integer) number2));
             fileTransfer.c_serverType = (String) serverType.getItems().get((Integer) number2);
@@ -95,13 +44,6 @@ public class FileTransferUIController {
             }
         });
         connectionSelection.setItems(FXCollections.observableArrayList(fileTransfer.connections));
-//        connectionSelection.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
-//            @Override
-//            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
-//                System.out.println(connectionSelection.getItems().get((Integer) number2));
-//                fileTransfer.c_selectedConnection = (String) serverType.getItems().get((Integer) number2);
-//            }
-//        });
     }
 
     public void open_file_chooser(ActionEvent e) {
@@ -110,6 +52,12 @@ public class FileTransferUIController {
         selectedFile = fileChooser.showOpenDialog(controllerStage);
         controllerStage.setTitle("Choose a File");
         sourceFile.setText(selectedFile.toString());
+    }
+
+    public void open_folder_chooser(ActionEvent e) {
+        selectedDirectory = directoryChooser.showDialog(controllerStage);
+        controllerStage.setTitle("Choose a Folder");
+        sourceFile.setText(selectedDirectory.toString());
     }
 
     public void key_file_chooser(ActionEvent e) {
@@ -155,7 +103,11 @@ public class FileTransferUIController {
             statusMessage.setText("Connected");
             //System.out.println("From UI: " + Thread.currentThread());
             new Thread(() -> {
-                upload_file_transfer.upload(sourceFile.getText(), destination.getText());
+                try {
+                    upload_file_transfer.upload(sourceFile.getText(), destination.getText());
+                } catch (IOException | JSchException ex) {
+                    ex.printStackTrace();
+                }
             }).start();
             System.out.println("From UI: " + Thread.currentThread());
         } catch (JSchException je) {

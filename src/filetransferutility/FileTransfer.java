@@ -1,6 +1,8 @@
 package filetransferutility;
 
+import Utils.ZipUtils;
 import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -11,8 +13,11 @@ import com.jcraft.jsch.UserInfo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import javafx.application.Platform;
 import javafx.scene.control.ProgressBar;
+import org.apache.commons.io.FileUtils;
 
 public class FileTransfer extends Connections {
 
@@ -77,15 +82,25 @@ public class FileTransfer extends Connections {
         }
     }
 
-    public void upload(String Source, String Destination) {
+    public void upload(String Source, String Destination) throws IOException, JSchException {
+        System.out.println("Uploading " + Source + "\nto " + Destination + "\n");
+        File f = new File(Source);
+        if (f.isDirectory()) {
+            uploadFolderToServer(f, Source, Destination);
+        } else {
+            uploadFileToServer(Source, Destination);
+        }
+    }
+
+    public void uploadFileToServer(String Source, String Destination) {
         try {
-            System.out.println("Uploading " + Source + "\nto " + Destination + "\n");
             Boolean new_upload = true;
             upload_complete = false;
             int put_status_mode = ChannelSftp.OVERWRITE;
             File f = new File(Source);
             ChannelSftp channelSftp = null;
             SftpATTRS attrs = null;
+            //channelSftp.
             while (!upload_complete) {
                 file_size = 0;
                 try {
@@ -120,6 +135,7 @@ public class FileTransfer extends Connections {
                         public void init(int i, String Source, String Destination, long bytes) {
                             uploadedBytes = file_size;
                         }
+
                         @Override
                         public boolean count(long bytes) {
                             uploadedBytes += bytes;
@@ -153,6 +169,55 @@ public class FileTransfer extends Connections {
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         }
+    }
+
+    void uploadFolderToServer(File f, String Source, String Destination) throws IOException, JSchException {
+        String destinationFolderName = f.getName();
+        FileUtils.copyDirectory(FileUtils.getFile(Source), FileUtils.getFile("temp/" + f.getName()));
+        ZipUtils appZip = new ZipUtils();
+        appZip.zipFolder("temp/" + destinationFolderName, "temp/" + destinationFolderName + ".zip");
+        uploadFileToServer("temp/" + destinationFolderName + ".zip", Destination);
+        executeUnzipScript(Destination, destinationFolderName);
+        File index = new File("temp/" + destinationFolderName);
+        String[] entries = index.list();
+        for (String s : entries) {
+            File currentFile = new File(index.getPath(), s);
+            currentFile.delete();
+        }
+        File zipFile = new File("temp/" + destinationFolderName + ".zip");
+        zipFile.delete();
+    }
+
+    Boolean executeUnzipScript(String destination, String folderName) throws IOException, JSchException {
+        String command = "";
+        command += "cd " + destination + "\n";
+        command += "unzip " + folderName + ".zip" + "\n";
+        command += "rm " + folderName + ".zip" + "\n";
+        channel = session.openChannel("exec");
+        ((ChannelExec) channel).setCommand(command);
+        channel.connect();
+        InputStream in = channel.getInputStream();
+        byte[] tmp = new byte[1024];
+        while (true) {
+            while (in.available() > 0) {
+                int i = in.read(tmp, 0, 1024);
+                if (i < 0) {
+                    break;
+                }
+                System.out.println(new String(tmp, 0, i));
+            }
+
+            if (channel.isClosed()) {
+                System.out.println("exit-status: " + channel.getExitStatus());
+                break;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ee) {
+            }
+        }
+
+        return true;
     }
 
     public void reconnect() {
