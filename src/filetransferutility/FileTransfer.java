@@ -10,11 +10,15 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.SftpProgressMonitor;
 import com.jcraft.jsch.UserInfo;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Vector;
 import javafx.application.Platform;
 import javafx.scene.control.ProgressBar;
 import org.apache.commons.io.FileUtils;
@@ -27,6 +31,7 @@ public class FileTransfer extends Connections {
     public boolean upload_complete;
     public boolean download_complete;
     ProgressBar progress_bar;
+    String outputFolderPath = "Output/";
 
     public FileTransfer() {
     }
@@ -178,7 +183,7 @@ public class FileTransfer extends Connections {
         ZipUtils appZip = new ZipUtils();
         appZip.zipFolder("temp/" + destinationFolderName, "temp/" + destinationFolderName + ".zip");
         uploadFileToServer("temp/" + destinationFolderName + ".zip", Destination);
-        executeUnzipScript(Destination, destinationFolderName);
+        unzipDestinationFolder(Destination, destinationFolderName);
         File index = new File("temp/" + destinationFolderName);
         String[] entries = index.list();
         for (String s : entries) {
@@ -189,60 +194,193 @@ public class FileTransfer extends Connections {
         zipFile.delete();
     }
 
-    Boolean executeUnzipScript(String destination, String folderName) throws IOException, JSchException {
+    void unzipDestinationFolder(String destination, String folderName) throws IOException, JSchException {
         String command = "";
-        command += "cd " + destination + "\n";
-        command += "unzip " + folderName + ".zip" + "\n";
-        command += "rm " + folderName + ".zip" + "\n";
-        channel = session.openChannel("exec");
-        ((ChannelExec) channel).setCommand(command);
-        channel.connect();
-        InputStream in = channel.getInputStream();
-        byte[] tmp = new byte[1024];
-        while (true) {
-            while (in.available() > 0) {
-                int i = in.read(tmp, 0, 1024);
-                if (i < 0) {
-                    break;
-                }
-                System.out.println(new String(tmp, 0, i));
+        File unzipScript = new File("Scripts/" + "Unzip.sh");
+        String inputStr = "";
+        try (BufferedReader br = new BufferedReader(new FileReader(unzipScript))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                inputStr += line + System.lineSeparator();
             }
-
-            if (channel.isClosed()) {
-                System.out.println("exit-status: " + channel.getExitStatus());
-                break;
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ee) {
-            }
+            String destinationZip = folderName + ".zip";
+            inputStr = inputStr.replaceFirst("[^#*]destination=\"\\w*\"", "\ndestination=\"" + destination + "\"");
+            inputStr = inputStr.replaceFirst("[^#*]destinationZip=\"\\w*\"", "\ndestinationZip=\"" + destinationZip + "\"");
+            inputStr = inputStr.replaceAll("\r\n", "\n");
+            FileOutputStream fileOut = new FileOutputStream(unzipScript);
+            fileOut.write(inputStr.getBytes());
+            fileOut.close();
+            executeScript("Unzip.sh");
         }
-
-        return true;
     }
 
-    void download(String Source, String Destination) throws SftpException, JSchException {
+    void download(String Source, String Destination) throws SftpException, JSchException, IOException {
         System.out.println("Downloading " + Source + " to " + Destination);
-        ChannelSftp channelSftp = null;
-        SftpATTRS attrs = null;
+        try {
+            channel = session.openChannel("sftp");
+            if (!channel.isConnected()) {
+                channel.connect();
+            }
+            ChannelSftp channelSftp = (ChannelSftp) channel;
+            if (Source.contains("$HOME")) {
+                Source = Source.replace("$HOME", channelSftp.getHome());
+            }
+            SftpATTRS attrs = channelSftp.lstat(Source);
+            if (attrs == null) {
+                System.out.println("Given file / folder  not present at the mentioned path");
+                return;
+            }
+            if (attrs.isDir()) {
+                downloadFolderFromServer(Source, Destination, channelSftp, attrs);
+            } else {
+                String sourceFileName = getSourceFileName(Source, channelSftp);
+                downloadFileFromServer(Source, Destination, channelSftp, attrs, sourceFileName);
+            }
+        } catch (SftpException ex) {
+            System.err.println(ex.toString());
+        }
+    }
+
+    void downloadFileFromServer(String Source, String Destination, ChannelSftp channelSftp, SftpATTRS attrs, String sourceFileName) throws SftpException {
         Boolean new_download = true;
         download_complete = false;
-        while (download_complete) {
+        int get_status_mode = ChannelSftp.OVERWRITE;
+        long sourceFileSize = attrs.getSize();
+        File destFile = new File(Destination + "/" + sourceFileName);
+        while (!download_complete) {
+            file_size = 0;
             try {
                 channel = session.openChannel("sftp");
                 if (!channel.isConnected()) {
                     channel.connect();
                 }
-                channelSftp = (ChannelSftp) channel;
-                channelSftp.get(Source, Destination);
+                try {
+                    Thread.sleep(2);
+                } catch (InterruptedException ex) {
+                    System.err.println(ex);
+                }
+                file_size = new_download ? 0 : (int) destFile.length();
+                channelSftp.get(Source, Destination, new SftpProgressMonitor() {
+                    long downloadedBytes;
+
+                    @Override
+                    public void init(int i, String string, String string1, long l) {
+                        downloadedBytes = file_size;
+                    }
+
+                    @Override
+                    public boolean count(long bytes) {
+                        downloadedBytes += bytes;
+                        Platform.runLater(() -> progress_bar.setProgress((double) downloadedBytes / (double) sourceFileSize));
+                        try {
+                            Thread.sleep(2);
+                        } catch (InterruptedException ex) {
+                            System.out.println(ex);
+                        }
+                        return (true);
+                    }
+
+                    @Override
+                    public void end() {
+                    }
+                }, get_status_mode);
             } catch (JSchException | SftpException ex) {
                 if (ex.toString().contains("session is down") || ex.toString().contains("socket write error”")) {
                     new_download = false;
+                    get_status_mode = ChannelSftp.RESUME;
                     reconnect();
                 }
+            }
+            if (file_size == sourceFileSize || progress_bar.getProgress() >= 1.0) {
                 download_complete = true;
+                Platform.runLater(() -> progress_bar.setProgress(1.0));
             }
         }
+    }
+
+    void downloadFolderFromServer(String Source, String Destination, ChannelSftp channelSftp, SftpATTRS attrs) throws IOException, SftpException {
+        executeFolderDownloadScript(Source);
+        Source += ".zip";
+        try {
+            attrs = channelSftp.lstat(Source);
+        } catch (SftpException ex) {
+            ex.toString();
+        }
+        String sourceFileName = getSourceFileName(Source, channelSftp);
+        downloadFileFromServer(Source, Destination, channelSftp, attrs, sourceFileName);
+        ZipUtils appzip = new ZipUtils();
+        appzip.unzipFile(Destination + "/" + Source, Destination);
+        new File(Destination + "/" + sourceFileName).delete();
+    }
+
+    public void executeFolderDownloadScript(String Source) throws FileNotFoundException, IOException {
+        String command = "";
+        File zipScript = new File("Scripts/" + "zipFolder.sh");
+        String inputStr = "";
+        try (BufferedReader br = new BufferedReader(new FileReader(zipScript))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                inputStr += line + System.lineSeparator();
+            }
+
+            inputStr = inputStr.replaceFirst("[^#*]source=\"\\w*\"", "\nsource=\"" + Source + "\"");
+            inputStr = inputStr.replaceAll("\r\n", "\n");
+            try (FileOutputStream fileOut = new FileOutputStream(zipScript)) {
+                fileOut.write(inputStr.getBytes());
+            }
+            executeScript("zipFolder.sh");
+        }
+    }
+
+    public Boolean executeScript(String ScriptName) {
+        try {
+            String script_output = "";
+            String command = "";
+            File scriptFile = new File("Scripts/" + ScriptName);
+            try (BufferedReader br = new BufferedReader(new FileReader(scriptFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    command += line + "\n";
+                }
+            }
+            channel = session.openChannel("exec");
+            ((ChannelExec) channel).setCommand(command);
+            channel.setInputStream(null);
+            channel.connect();
+            InputStream in = channel.getInputStream();
+            byte[] tmp = new byte[1024];
+            while (true) {
+                while (in.available() > 0) {
+                    int i = in.read(tmp, 0, 1024);
+                    if (i < 0) {
+                        break;
+                    }
+                    script_output = new String(tmp, 0, i);
+                    System.out.println(script_output);
+                }
+                if (channel.isClosed()) {
+                    System.out.println("exit-status: " + channel.getExitStatus());
+                    break;
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ee) {
+                }
+            }
+
+            channel.disconnect();
+
+        } catch (JSchException | IOException e) {
+            System.out.println(e);
+        }
+        return true;
+
+    }
+
+    String getSourceFileName(String Source, ChannelSftp channelSftp) throws SftpException {
+        Vector<ChannelSftp.LsEntry> sourceFileObject = channelSftp.ls(Source);
+        String sourceFileName = sourceFileObject.get(0).getFilename();
+        return sourceFileName;
     }
 
     public void reconnect() {

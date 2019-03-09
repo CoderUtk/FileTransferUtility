@@ -5,8 +5,6 @@ import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -117,7 +115,7 @@ public class FileTransferUIController extends FXMLComponents {
             new Thread(() -> {
                 try {
                     download_file_transfer.download(serverSource.getText(), localDestination.getText());
-                } catch (JSchException | SftpException ex) {
+                } catch (JSchException | SftpException | IOException ex) {
                     ex.printStackTrace();
                 }
             }).start();
