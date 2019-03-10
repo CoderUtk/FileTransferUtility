@@ -309,7 +309,7 @@ public class FileTransfer extends Connections {
         String sourceFileName = getSourceFileName(Source, channelSftp);
         downloadFileFromServer(Source, Destination, channelSftp, attrs, sourceFileName);
         ZipUtils appzip = new ZipUtils();
-        appzip.unzipFile(Destination + "/" + Source, Destination);
+        appzip.unzipFile(Destination + "/" + sourceFileName, Destination);
         new File(Destination + "/" + sourceFileName).delete();
     }
 

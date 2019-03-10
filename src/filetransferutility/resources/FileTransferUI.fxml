@@ -66,7 +66,7 @@
         </tabs>
       </TabPane>
       <ProgressBar fx:id="ProgressBar" layoutX="6.0" layoutY="405.0" prefHeight="75.0" prefWidth="634.0" progress="0.0" />
-      <Label fx:id="progressLabel" layoutX="266.0" layoutY="432.0" prefHeight="21.0" prefWidth="115.0" textAlignment="CENTER" wrapText="true">
+      <Label fx:id="progressLabel" layoutX="271.0" layoutY="422.0" prefHeight="21.0" prefWidth="105.0" textAlignment="CENTER" wrapText="true">
          <font>
             <Font name="System Bold" size="15.0" />
          </font>

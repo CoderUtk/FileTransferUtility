@@ -1,6 +1,8 @@
 cd $HOME
-source=""
+source="/home/qc9/users/utkarsh"
+cd $source
+foldername=$(basename $source)
 if [[ -d $source ]]; then
 	echo "Is Folder"
-	zip -r $source".zip" $source
+	zip -r $foldername".zip" *
 fi

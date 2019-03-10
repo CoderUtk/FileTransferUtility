@@ -1,6 +1,5 @@
 package Utils;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -87,10 +86,12 @@ public class ZipUtils {
         return file.substring(SOURCE_FOLDER.length() + 1, file.length());
     }
 
-    public void unzipFile(String zipFilePath, String destDir){
+    public void unzipFile(String zipFilePath, String destDir) {
         File dir = new File(destDir);
         // create output directory if it doesn't exist
-        if(!dir.exists()) dir.mkdirs();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
         FileInputStream fis;
         //buffer for read and write data to file
         byte[] buffer = new byte[1024];
@@ -98,16 +99,20 @@ public class ZipUtils {
             fis = new FileInputStream(zipFilePath);
             ZipInputStream zis = new ZipInputStream(fis);
             ZipEntry ze = zis.getNextEntry();
-            while(ze != null){
+            while (ze != null) {
                 String fileName = ze.getName();
+                System.out.println(destDir + File.separator + fileName);
                 File newFile = new File(destDir + File.separator + fileName);
-                System.out.println("Unzipping to "+newFile.getAbsolutePath());
+                if (!newFile.exists()) {
+                    newFile.mkdir();
+                }
+                System.out.println("Unzipping to " + newFile.getAbsolutePath());
                 //create directories for sub directories in zip
                 new File(newFile.getParent()).mkdirs();
                 FileOutputStream fos = new FileOutputStream(newFile);
                 int len;
                 while ((len = zis.read(buffer)) > 0) {
-                fos.write(buffer, 0, len);
+                    fos.write(buffer, 0, len);
                 }
                 fos.close();
                 //close this ZipEntry
@@ -121,6 +126,6 @@ public class ZipUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
     }
 }
