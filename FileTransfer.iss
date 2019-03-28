@@ -39,6 +39,7 @@ Source: "manifest.mf"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 Source: "build.xml"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 Source: "Connections.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Keys\*"; DestDir: "{app}\Keys"; Flags: ignoreversion recursesubdirs
+Source: "temp\*"; DestDir: "{app}\Keys"; Flags: ignoreversion recursesubdirs
 Source: "puttygen.exe"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 Source: "FileTransfer.bat"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 
