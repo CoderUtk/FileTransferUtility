@@ -19,7 +19,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
+import java.util.function.BiConsumer;
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import org.apache.commons.io.FileUtils;
 
@@ -30,14 +34,25 @@ public class FileTransfer extends Connections {
     public int file_size;
     public boolean upload_complete;
     public boolean download_complete;
-    ProgressBar progress_bar;
+    //ProgressBar progress_bar;
     String outputFolderPath = "Output/";
+    private final ReadOnlyDoubleWrapper progress = new ReadOnlyDoubleWrapper();
+    private BiConsumer<Double, Double> progressUpdate;
 
     public FileTransfer() {
     }
 
-    public FileTransfer(ProgressBar progress_bar) {
-        this.progress_bar = progress_bar;
+    public double getProgress() {
+        return progressProperty().get();
+    }
+
+    public ReadOnlyDoubleProperty progressProperty() {
+        return progress;
+    }
+
+    public void setProgressUpdate(BiConsumer<Double, Double> progressUpdate) {
+        this.progressUpdate = progressUpdate;
+        //progressUpdate.accept(file_size, file_size);
     }
 
     public void connect() throws JSchException {
@@ -145,11 +160,9 @@ public class FileTransfer extends Connections {
                         @Override
                         public boolean count(long bytes) {
                             uploadedBytes += bytes;
-                            Platform.runLater(() -> progress_bar.setProgress((double) uploadedBytes / (double) f.length()));
-                            try {
-                                Thread.sleep(2);
-                            } catch (InterruptedException ex) {
-                                System.out.println(ex);
+                            if (progressUpdate != null) {
+                                progress.set((double) uploadedBytes / (double) f.length());
+                                progressUpdate.accept(progress.getValue(), 100.00);
                             }
                             return (true);
                         }
@@ -166,10 +179,9 @@ public class FileTransfer extends Connections {
                     }
                 }
 
-                if (file_size == f.length() || progress_bar.getProgress() >= 1.0) {
+                if (file_size == f.length() || (int) getProgress() == 100) {
                     upload_complete = true;
-                    //frame.dispose();
-                    Platform.runLater(() -> progress_bar.setProgress(1.0));
+                    progressUpdate.accept(100.00, 100.00);
                 }
             }
         } catch (FileNotFoundException ex) {
@@ -271,11 +283,9 @@ public class FileTransfer extends Connections {
                     @Override
                     public boolean count(long bytes) {
                         downloadedBytes += bytes;
-                        Platform.runLater(() -> progress_bar.setProgress((double) downloadedBytes / (double) sourceFileSize));
-                        try {
-                            Thread.sleep(2);
-                        } catch (InterruptedException ex) {
-                            System.out.println(ex);
+                        if (progressUpdate != null) {
+                            progress.set((double) downloadedBytes / (double) sourceFileSize);
+                            progressUpdate.accept(progress.getValue(), 100.00);
                         }
                         return (true);
                     }
@@ -291,9 +301,9 @@ public class FileTransfer extends Connections {
                     reconnect();
                 }
             }
-            if (file_size == sourceFileSize || progress_bar.getProgress() >= 1.0) {
+            if (file_size == sourceFileSize || (int) getProgress() == 100) {
                 download_complete = true;
-                Platform.runLater(() -> progress_bar.setProgress(1.0));
+                progressUpdate.accept(100.00, 100.00);
             }
         }
     }
@@ -309,7 +319,7 @@ public class FileTransfer extends Connections {
         String sourceFileName = getSourceFileName(Source, channelSftp);
         downloadFileFromServer(Source, Destination, channelSftp, attrs, sourceFileName);
         ZipUtils appzip = new ZipUtils();
-        appzip.unzipFile(Destination + "/" + sourceFileName, Destination);
+        appzip.unZipIt(Destination + "/" + sourceFileName, Destination);
         new File(Destination + "/" + sourceFileName).delete();
     }
 
@@ -394,5 +404,9 @@ public class FileTransfer extends Connections {
                 System.out.println(e);
             }
         }
+    }
+
+    void removeFileFromServer(String filePath, ChannelSftp channelSftp) throws SftpException {
+        channelSftp.rm(filePath);
     }
 }

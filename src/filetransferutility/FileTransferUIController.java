@@ -8,6 +8,7 @@ import java.io.IOException;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.image.ImageView;
@@ -112,8 +113,23 @@ public class FileTransferUIController extends FXMLComponents {
         try {
             download_file_transfer.connect();
             downloadStatusMessage.setText("Connected");
+            Task task = new Task<Void>() {
+                public Void call() throws Exception {
+                    try {
+                        download_file_transfer.setProgressUpdate((workDone, totalWork)
+                                -> updateProgress(workDone, totalWork));
+                        downloadStatusMessage.setText("Downloading....");
+                        download_file_transfer.download(serverSource.getText(), localDestination.getText());
+                    } catch (JSchException | SftpException | IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    return null;
+                }
+            };
+            ProgressBar.progressProperty().bind(task.progressProperty());
             new Thread(() -> {
                 try {
+                    downloadStatusMessage.setText("Downloading....");
                     download_file_transfer.download(serverSource.getText(), localDestination.getText());
                 } catch (JSchException | SftpException | IOException ex) {
                     ex.printStackTrace();
@@ -126,7 +142,7 @@ public class FileTransferUIController extends FXMLComponents {
 
     public FileTransfer initiateTransfer() throws IOException, FileNotFoundException, ParseException {
         ProgressBar.setProgress(0.0);
-        FileTransfer file_transfer = new FileTransfer(ProgressBar);
+        FileTransfer file_transfer = new FileTransfer();
         if (addConnectionRbtn.isSelected()) {
             try {
                 System.out.println(connectionName.getText());
@@ -146,7 +162,5 @@ public class FileTransferUIController extends FXMLComponents {
     public void exitApplication(ActionEvent event) {
         Platform.exit();
         ProgressBar.setProgress(0.0);
-        FileTransfer downloadFileTransfer = new FileTransfer(ProgressBar);
     }
-
 }

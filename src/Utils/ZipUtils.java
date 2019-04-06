@@ -14,7 +14,9 @@ public class ZipUtils {
 
     private List<String> fileList;
     private static String OUTPUT_ZIP_FILE;
-    private static String SOURCE_FOLDER; // SourceFolder path
+    private static String SOURCE_FOLDER;
+    private static String INPUT_ZIP_FILE;
+    private static String OUTPUT_FOLDER;
 
     public void zipFolder(String source, String destination) {
         SOURCE_FOLDER = source;
@@ -86,28 +88,34 @@ public class ZipUtils {
         return file.substring(SOURCE_FOLDER.length() + 1, file.length());
     }
 
-    public void unzipFile(String zipFilePath, String destDir) {
-        File dir = new File(destDir);
-        // create output directory if it doesn't exist
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        FileInputStream fis;
-        //buffer for read and write data to file
+    public void unZipIt(String zipFile, String outputFolder) {
+
         byte[] buffer = new byte[1024];
+
         try {
-            fis = new FileInputStream(zipFilePath);
-            ZipInputStream zis = new ZipInputStream(fis);
+            INPUT_ZIP_FILE = zipFile;
+            OUTPUT_FOLDER = outputFolder;
+            //create output directory is not exists
+            File folder = new File(OUTPUT_FOLDER);
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+
+            //get the zip file content
+            ZipInputStream zis
+                    = new ZipInputStream(new FileInputStream(zipFile));
+            //get the zipped file list entry
             ZipEntry ze = zis.getNextEntry();
+
             while (ze != null) {
+
                 String fileName = ze.getName();
-                System.out.println(destDir + File.separator + fileName);
-                File newFile = new File(destDir + File.separator + fileName);
-                if (!newFile.exists()) {
-                    newFile.mkdir();
-                }
-                System.out.println("Unzipping to " + newFile.getAbsolutePath());
-                //create directories for sub directories in zip
+                File newFile = new File(outputFolder + File.separator + fileName);
+
+                System.out.println("file unzip : " + newFile.getAbsoluteFile());
+
+                //create all non exists folders
+                //else you will hit FileNotFoundException for compressed folder
                 new File(newFile.getParent()).mkdirs();
                 FileOutputStream fos = new FileOutputStream(newFile);
                 int len;
@@ -115,17 +123,13 @@ public class ZipUtils {
                     fos.write(buffer, 0, len);
                 }
                 fos.close();
-                //close this ZipEntry
-                zis.closeEntry();
                 ze = zis.getNextEntry();
             }
-            //close last ZipEntry
             zis.closeEntry();
             zis.close();
-            fis.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Finished");
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
-
     }
 }
