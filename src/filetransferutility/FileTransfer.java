@@ -20,11 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
 import java.util.function.BiConsumer;
-import javafx.application.Platform;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import org.apache.commons.io.FileUtils;
 
 public class FileTransfer extends Connections {
@@ -115,6 +114,7 @@ public class FileTransfer extends Connections {
 
     void uploadFileToServer(String Source, String Destination) {
         try {
+            System.out.println("From 1: " + Thread.currentThread());
             Boolean new_upload = true;
             upload_complete = false;
             int put_status_mode = ChannelSftp.OVERWRITE;
@@ -144,11 +144,7 @@ public class FileTransfer extends Connections {
                     } catch (SftpException ex) {
                     }
                     //total_progress = (float) file_size / f.length();
-                    try {
-                        Thread.sleep(2);
-                    } catch (InterruptedException ex) {
-                        System.out.println(ex);
-                    }
+                    System.out.println("From 2: " + Thread.currentThread());
                     channelSftp.put(new FileInputStream(f), f.getName(), new SftpProgressMonitor() {
                         long uploadedBytes;
 
@@ -162,7 +158,7 @@ public class FileTransfer extends Connections {
                             uploadedBytes += bytes;
                             if (progressUpdate != null) {
                                 progress.set((double) uploadedBytes / (double) f.length());
-                                progressUpdate.accept(progress.getValue(), 100.00);
+                                progressUpdate.accept(progress.getValue() * 100.00, 100.00);
                             }
                             return (true);
                         }
@@ -178,8 +174,8 @@ public class FileTransfer extends Connections {
                         reconnect();
                     }
                 }
-
-                if (file_size == f.length() || (int) getProgress() == 100) {
+                System.out.println(progress.getValue());
+                if (file_size == f.length() || progress.getValue() == 1.0) {
                     upload_complete = true;
                     progressUpdate.accept(100.00, 100.00);
                 }
@@ -187,6 +183,9 @@ public class FileTransfer extends Connections {
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         }
+        System.out.println("From 3: " + Thread.currentThread());
+        Thread.yield();
+        System.out.println("From 4: " + Thread.currentThread());
     }
 
     void uploadFolderToServer(File f, String Source, String Destination) throws IOException, JSchException {
@@ -266,11 +265,6 @@ public class FileTransfer extends Connections {
                 if (!channel.isConnected()) {
                     channel.connect();
                 }
-                try {
-                    Thread.sleep(2);
-                } catch (InterruptedException ex) {
-                    System.err.println(ex);
-                }
                 file_size = new_download ? 0 : (int) destFile.length();
                 channelSftp.get(Source, Destination, new SftpProgressMonitor() {
                     long downloadedBytes;
@@ -285,7 +279,7 @@ public class FileTransfer extends Connections {
                         downloadedBytes += bytes;
                         if (progressUpdate != null) {
                             progress.set((double) downloadedBytes / (double) sourceFileSize);
-                            progressUpdate.accept(progress.getValue(), 100.00);
+                            progressUpdate.accept(progress.getValue() * 100.00, 100.00);
                         }
                         return (true);
                     }

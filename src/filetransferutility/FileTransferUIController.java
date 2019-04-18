@@ -90,17 +90,28 @@ public class FileTransferUIController extends FXMLComponents {
 
     public void upload(ActionEvent e) throws IOException, FileNotFoundException, ParseException, JSchException {
         FileTransfer upload_file_transfer = initiateTransfer();
-        uploadStatusMessage.setText("Connecting.....");
+        try {
+            uploadStatusMessage.setText("Connecting.....");;
+        } catch (IllegalStateException ex) {
+        }
         try {
             upload_file_transfer.connect();
             uploadStatusMessage.setText("Connected");
-            new Thread(() -> {
-                try {
-                    upload_file_transfer.upload(localSource.getText(), serverDestination.getText());
-                } catch (IOException | JSchException ex) {
-                    ex.printStackTrace();
+            Task task = new Task<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        upload_file_transfer.setProgressUpdate((workDone, totalWork)
+                                -> updateProgress(workDone, totalWork));
+                        upload_file_transfer.upload(localSource.getText(), serverDestination.getText());
+                    } catch (JSchException | IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    return null;
                 }
-            }).start();
+            };
+            ProgressBar.progressProperty().bind(task.progressProperty());
+            new Thread(task).start();
             System.out.println("From UI: " + Thread.currentThread());
         } catch (JSchException je) {
             uploadStatusMessage.setText(("Unable to connect. Please Check credentials and try again"));
@@ -127,14 +138,15 @@ public class FileTransferUIController extends FXMLComponents {
                 }
             };
             ProgressBar.progressProperty().bind(task.progressProperty());
-            new Thread(() -> {
-                try {
-                    downloadStatusMessage.setText("Downloading....");
-                    download_file_transfer.download(serverSource.getText(), localDestination.getText());
-                } catch (JSchException | SftpException | IOException ex) {
-                    ex.printStackTrace();
-                }
-            }).start();
+            new Thread(task).start();
+//            new Thread(() -> {
+//                try {
+//                    downloadStatusMessage.setText("Downloading....");
+//                    download_file_transfer.download(serverSource.getText(), localDestination.getText());
+//                } catch (JSchException | SftpException | IOException ex) {
+//                    ex.printStackTrace();
+//                }
+//            }).start();
         } catch (JSchException je) {
             uploadStatusMessage.setText(("Unable to connect. Please Check credentials and try again"));
         }
