@@ -21,7 +21,7 @@ public class FileTransferUIController extends FXMLComponents {
     FileTransfer fileTransfer = new FileTransfer();
     File selectedFile;
     File selectedDirectory;
-
+    
     @FXML
     @SuppressWarnings("unchecked")
     public void initialize() {
@@ -47,7 +47,7 @@ public class FileTransferUIController extends FXMLComponents {
         });
         connectionSelection.setItems(FXCollections.observableArrayList(fileTransfer.connections));
     }
-
+    
     public void open_file_chooser(ActionEvent e) {
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("All Files", "*"));
@@ -55,7 +55,7 @@ public class FileTransferUIController extends FXMLComponents {
         controllerStage.setTitle("Choose a File");
         localSource.setText(selectedFile.toString());
     }
-
+    
     public void open_folder_chooser(ActionEvent e) {
         controllerStage.setTitle("Choose a Folder");
         selectedDirectory = directoryChooser.showDialog(controllerStage);
@@ -65,7 +65,7 @@ public class FileTransferUIController extends FXMLComponents {
             localDestination.setText(selectedDirectory.toString());
         }
     }
-
+    
     public void key_file_chooser(ActionEvent e) {
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("All Files", "*"));
@@ -73,21 +73,21 @@ public class FileTransferUIController extends FXMLComponents {
         controllerStage.setTitle("Choose a File");
         keyFileLocation.setText(selectedFile.toString());
     }
-
+    
     public void add_new_connection(ActionEvent e) {
         selectConnectionRbtn.setToggleGroup(connectionToggleGroup);
         addConnectionRbtn.setToggleGroup(connectionToggleGroup);
         selectConnectionPane.setVisible(false);
         addConnectionPane.setVisible(true);
     }
-
+    
     public void select_connection(ActionEvent e) {
         selectConnectionRbtn.setToggleGroup(connectionToggleGroup);
         addConnectionRbtn.setToggleGroup(connectionToggleGroup);
         selectConnectionPane.setVisible(true);
         addConnectionPane.setVisible(false);
     }
-
+    
     public void upload(ActionEvent e) throws IOException, FileNotFoundException, ParseException, JSchException {
         FileTransfer upload_file_transfer = initiateTransfer();
         try {
@@ -117,7 +117,7 @@ public class FileTransferUIController extends FXMLComponents {
             uploadStatusMessage.setText(("Unable to connect. Please Check credentials and try again"));
         }
     }
-
+    
     public void download(ActionEvent e) throws IOException, FileNotFoundException, ParseException {
         FileTransfer download_file_transfer = initiateTransfer();
         downloadStatusMessage.setText("Connecting.....");
@@ -151,9 +151,8 @@ public class FileTransferUIController extends FXMLComponents {
             uploadStatusMessage.setText(("Unable to connect. Please Check credentials and try again"));
         }
     }
-
+    
     public FileTransfer initiateTransfer() throws IOException, FileNotFoundException, ParseException {
-        ProgressBar.setProgress(0.0);
         FileTransfer file_transfer = new FileTransfer();
         if (addConnectionRbtn.isSelected()) {
             try {
@@ -169,7 +168,7 @@ public class FileTransferUIController extends FXMLComponents {
         progressLabel.textProperty().bind(ProgressBar.progressProperty().multiply(100).asString("%.2f").concat(" %"));
         return file_transfer;
     }
-
+    
     @FXML
     public void exitApplication(ActionEvent event) {
         Platform.exit();
