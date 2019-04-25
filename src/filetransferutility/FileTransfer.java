@@ -215,8 +215,8 @@ public class FileTransfer extends Connections {
                 inputStr += line + System.lineSeparator();
             }
             String destinationZip = folderName + ".zip";
-            inputStr = inputStr.replaceFirst("[^#*]destination=\"\\w*\"", "\ndestination=\"" + destination + "\"");
-            inputStr = inputStr.replaceFirst("[^#*]destinationZip=\"\\w*\"", "\ndestinationZip=\"" + destinationZip + "\"");
+            inputStr = inputStr.replaceFirst("[^#*]destination=\".*\"", "\ndestination=\"" + destination + "\"");
+            inputStr = inputStr.replaceFirst("[^#*]destinationZip=\".*\"", "\ndestinationZip=\"" + destinationZip + "\"");
             inputStr = inputStr.replaceAll("\r\n", "\n");
             FileOutputStream fileOut = new FileOutputStream(unzipScript);
             fileOut.write(inputStr.getBytes());
@@ -295,7 +295,7 @@ public class FileTransfer extends Connections {
                     reconnect();
                 }
             }
-            if (file_size == sourceFileSize || (int) getProgress() == 100) {
+            if (file_size == sourceFileSize || progress.getValue() == 1.0) {
                 download_complete = true;
                 progressUpdate.accept(100.00, 100.00);
             }
@@ -313,8 +313,10 @@ public class FileTransfer extends Connections {
         String sourceFileName = getSourceFileName(Source, channelSftp);
         downloadFileFromServer(Source, Destination, channelSftp, attrs, sourceFileName);
         ZipUtils appzip = new ZipUtils();
-        appzip.unZipIt(Destination + "/" + sourceFileName, Destination);
-        new File(Destination + "/" + sourceFileName).delete();
+        //create output folder
+        new File(Destination + "/" + "");
+        appzip.unZipIt(Destination + "/" + sourceFileName, Destination + "/");
+        new File(Destination + "\\" + sourceFileName).delete();
     }
 
     public void executeFolderDownloadScript(String Source) throws FileNotFoundException, IOException {
@@ -326,8 +328,7 @@ public class FileTransfer extends Connections {
             while ((line = br.readLine()) != null) {
                 inputStr += line + System.lineSeparator();
             }
-
-            inputStr = inputStr.replaceFirst("[^#*]source=\"\\w*\"", "\nsource=\"" + Source + "\"");
+            inputStr = inputStr.replaceFirst("[^#*]source=\".*\"", "\nsource=\"" + Source + "\"");
             inputStr = inputStr.replaceAll("\r\n", "\n");
             try (FileOutputStream fileOut = new FileOutputStream(zipScript)) {
                 fileOut.write(inputStr.getBytes());

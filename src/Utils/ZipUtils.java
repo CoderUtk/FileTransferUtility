@@ -96,33 +96,34 @@ public class ZipUtils {
             INPUT_ZIP_FILE = zipFile;
             OUTPUT_FOLDER = outputFolder;
             //create output directory is not exists
-            File folder = new File(OUTPUT_FOLDER);
+            String zipFolder = new File(INPUT_ZIP_FILE).getName().replace(".zip", "");
+            File folder = new File(OUTPUT_FOLDER + "/" + zipFolder);
             if (!folder.exists()) {
-                folder.mkdir();
+                folder.mkdirs();
             }
 
             //get the zip file content
-            ZipInputStream zis
-                    = new ZipInputStream(new FileInputStream(zipFile));
+            ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
             //get the zipped file list entry
             ZipEntry ze = zis.getNextEntry();
-
             while (ze != null) {
-
                 String fileName = ze.getName();
-                File newFile = new File(outputFolder + File.separator + fileName);
-
-                System.out.println("file unzip : " + newFile.getAbsoluteFile());
-
-                //create all non exists folders
-                //else you will hit FileNotFoundException for compressed folder
-                new File(newFile.getParent()).mkdirs();
-                FileOutputStream fos = new FileOutputStream(newFile);
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
+                if (!ze.getName().endsWith("/")) {
+                    File newFile = new File(OUTPUT_FOLDER + "/" + zipFolder + File.separator + fileName);
+                    System.out.println("file unzip : " + newFile.getAbsoluteFile());
+                    //create all non exists folders
+                    //else you will hit FileNotFoundException for compressed folder
+                    File tempFile = new File(newFile.getParent());
+                    if (!tempFile.exists()) {
+                        tempFile.mkdirs();
+                    }
+                    FileOutputStream fos = new FileOutputStream(newFile);
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+                    fos.close();
                 }
-                fos.close();
                 ze = zis.getNextEntry();
             }
             zis.closeEntry();

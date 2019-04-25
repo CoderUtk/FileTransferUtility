@@ -1,8 +1,10 @@
+#!/bin/bash
 cd $HOME
-source="/home/qc9/users/utkarsh"
-cd $source
+source="/home/cloud_as1/users/utkarsh/TXTs"
+cd $source/../
 foldername=$(basename $source)
 if [[ -d $source ]]; then
-	echo "Is Folder"
-	zip -r $foldername".zip" *
+	echo "Zipping "$foldername " to $foldername.zip"
+	zip -r $foldername".zip" $foldername
 fi
+
