@@ -5,10 +5,10 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" styleClass="mainFxmlClass" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="filetransferutility.FileTransferUIController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" styleClass="mainFxmlClass" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="filetransferutility.ui.FileTransferUIController">
    <children>
-      <RadioButton fx:id="addConnectionRbtn" layoutX="416.0" layoutY="34.0" mnemonicParsing="false" onAction="#add_new_connection" text="Add Connection" />
-      <RadioButton fx:id="selectConnectionRbtn" layoutX="103.0" layoutY="34.0" mnemonicParsing="false" onAction="#select_connection" selected="true" text="Select Connection" />
+      <RadioButton fx:id="addConnectionRBtn" layoutX="416.0" layoutY="34.0" mnemonicParsing="false" onAction="#addNewConnection" text="Add Connection" />
+      <RadioButton fx:id="selectConnectionRBtn" layoutX="103.0" layoutY="34.0" mnemonicParsing="false" onAction="#selectConnection" selected="true" text="Select Connection" />
       <Separator layoutX="3.0" layoutY="62.0" prefHeight="4.0" prefWidth="634.0" />
       <Pane fx:id="addConnectionPane" layoutX="3.0" layoutY="64.0" prefHeight="84.0" prefWidth="600.0" visible="false">
          <children>
@@ -19,7 +19,7 @@
             <TextField fx:id="connectionName" layoutX="25.0" layoutY="5.0" prefHeight="25.0" prefWidth="115.0" promptText="Name" />
             <TextField fx:id="host" layoutX="296.0" layoutY="5.0" prefHeight="25.0" prefWidth="107.0" promptText="Host" />
             <PasswordField fx:id="password" layoutX="25.0" layoutY="43.0" prefHeight="25.0" prefWidth="115.0" promptText="Password" />
-            <Button fx:id="keyFileChooser" layoutX="407.0" layoutY="44.0" mnemonicParsing="false" onAction="#key_file_chooser" prefHeight="11.0" prefWidth="25.0" text="Button" visible="false" />
+            <Button fx:id="keyFileChooser" layoutX="407.0" layoutY="44.0" mnemonicParsing="false" onAction="#chooseKeyFile" prefHeight="11.0" prefWidth="25.0" text="Button" visible="false" />
             <Label layoutX="499.0" layoutY="9.0" text="Type :" />
          </children>
       </Pane>
@@ -37,12 +37,12 @@
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="138.0" prefWidth="660.0">
                      <children>
                         <Button fx:id="uploadBtn" layoutX="289.0" layoutY="148.0" mnemonicParsing="false" onAction="#upload" text="UPLOAD" />
-                        <Button fx:id="sourceFileChooser" layoutX="564.0" layoutY="40.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#open_file_chooser" prefHeight="25.0" prefWidth="21.0" />
+                        <Button fx:id="sourceFileChooser" layoutX="564.0" layoutY="40.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#openFileChooser" prefHeight="25.0" prefWidth="21.0" />
                         <TextField fx:id="serverDestination" layoutX="112.0" layoutY="77.0" prefHeight="25.0" prefWidth="511.0" />
                         <Label layoutX="21.0" layoutY="81.0" text="Destination :" />
                         <TextField fx:id="localSource" layoutX="112.0" layoutY="40.0" prefHeight="25.0" prefWidth="438.0" />
                         <Label layoutX="21.0" layoutY="44.0" prefHeight="17.0" prefWidth="77.0" text="Source : " />
-                        <Button fx:id="sourceFolderChooser" layoutX="595.0" layoutY="40.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#open_folder_chooser" prefHeight="25.0" prefWidth="22.0" />
+                        <Button fx:id="sourceFolderChooser" layoutX="595.0" layoutY="40.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#openFolderChooser" prefHeight="25.0" prefWidth="22.0" />
                         <Label fx:id="uploadStatusMessage" layoutX="45.0" layoutY="152.0" prefHeight="17.0" prefWidth="107.0" />
                      </children>
                   </AnchorPane>
@@ -58,14 +58,14 @@
                         <TextField fx:id="serverSource" layoutX="112.0" layoutY="40.0" prefHeight="25.0" prefWidth="509.0" />
                         <Label layoutX="21.0" layoutY="44.0" prefHeight="17.0" prefWidth="77.0" text="Source : " />
                         <Label fx:id="downloadStatusMessage" layoutX="45.0" layoutY="152.0" prefHeight="17.0" prefWidth="107.0" />
-                        <Button fx:id="destinationFolderChooser" layoutX="590.0" layoutY="77.0" mnemonicParsing="false" onAction="#open_folder_chooser" prefHeight="25.0" prefWidth="31.0" text="Button" />
+                        <Button fx:id="destinationFolderChooser" layoutX="590.0" layoutY="77.0" mnemonicParsing="false" onAction="#openFolderChooser" prefHeight="25.0" prefWidth="31.0" text="Button" />
                      </children>
                   </AnchorPane>
                </content>
           </Tab>
         </tabs>
       </TabPane>
-      <ProgressBar fx:id="ProgressBar" layoutX="6.0" layoutY="405.0" prefHeight="75.0" prefWidth="634.0" progress="0.0" />
+      <ProgressBar fx:id="progressBar" layoutX="6.0" layoutY="405.0" prefHeight="75.0" prefWidth="634.0" progress="0.0" />
       <Label fx:id="progressLabel" layoutX="271.0" layoutY="422.0" prefHeight="21.0" prefWidth="105.0" textAlignment="CENTER" wrapText="true">
          <font>
             <Font name="System Bold" size="15.0" />
