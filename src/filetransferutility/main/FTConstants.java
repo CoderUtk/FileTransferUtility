@@ -29,5 +29,7 @@ public class FTConstants {
     public static final String PORT = "Port";
     public static final String HOST = "Hostname";
     public static final String KEY_FILE = "KeyFile";
+    public static final String GREEN_COLOR = "#00cc99";
+    public static final String RED_COLOR = "#ff0000";
 
 }

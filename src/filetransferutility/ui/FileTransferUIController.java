@@ -12,6 +12,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import org.json.simple.parser.ParseException;
 
@@ -31,7 +32,7 @@ public class FileTransferUIController extends FXMLComponents {
         sourceFolderChooser.setGraphic(new ImageView(folderChooserIcon));
         serverType.setItems(FXCollections.observableArrayList(
                 FTConstants.PASSWORD_BASED,
-                FTConstants.PASSWORD_BASED
+                FTConstants.KEY_BASED
         ));
         serverType.setValue(FTConstants.PASSWORD_BASED);
         serverType.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
@@ -169,6 +170,22 @@ public class FileTransferUIController extends FXMLComponents {
         }
         progressLabel.textProperty().bind(progressBar.progressProperty().multiply(100).asString("%.2f").concat(" %"));
         return transferObj;
+    }
+
+    public void testConnection(ActionEvent event) {
+        connectionStatus.setText(Messages.CONNECTING_MSG);
+        try {
+            FileTransfer connectionObj = initiateTransfer();
+            connectionObj.connect();
+            connectionStatus.setTextFill(Color.web(FTConstants.GREEN_COLOR));
+            connectionStatus.setText(Messages.SUCCESS_MSG);
+        } catch (Exception e) {
+            connectionStatus.setTextFill(Color.web(FTConstants.RED_COLOR));
+            if (e instanceof NullPointerException || e == null) {
+                connectionStatus.setText(Messages.FAILURE_MSG);
+            } else
+                connectionStatus.setText(e.getMessage());
+        }
     }
 
     @FXML

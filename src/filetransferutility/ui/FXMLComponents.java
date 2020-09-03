@@ -85,4 +85,8 @@ public class FXMLComponents {
     Button destinationFolderChooser = new Button();
     @FXML
     TabPane tabPane = new TabPane();
+    @FXML
+    Button testConnectionBtn = new Button();
+    @FXML
+    Label connectionStatus = new Label();
 }

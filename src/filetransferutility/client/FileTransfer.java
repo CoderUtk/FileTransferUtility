@@ -9,6 +9,7 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.SftpProgressMonitor;
 import com.jcraft.jsch.UserInfo;
+import filetransferutility.main.Messages;
 import filetransferutility.utils.Utils;
 import filetransferutility.utils.ZipUtils;
 import filetransferutility.main.FTConstants;
@@ -31,8 +32,7 @@ public class FileTransfer extends Connections {
 
     private com.jcraft.jsch.Session session;
     private Channel channel;
-    int fileSize;
-    String outputFolderPath = "Output/";
+    private int fileSize;
     private final ReadOnlyDoubleWrapper progress = new ReadOnlyDoubleWrapper();
     private BiConsumer<Double, Double> progressUpdate;
 
@@ -51,7 +51,7 @@ public class FileTransfer extends Connections {
 
     public void connect() throws JSchException {
         JSch jsch = new JSch();
-        if (authType.equalsIgnoreCase("Cloud")) {
+        if (authType.equalsIgnoreCase(FTConstants.KEY_BASED)) {
             jsch.addIdentity("Keys\\" + keyFileLocation);
         }
         int portno = Integer.parseInt(port);
@@ -158,7 +158,7 @@ public class FileTransfer extends Connections {
                     }, putStatusMode);
                 }
             } catch (JSchException | SftpException ex) {
-                if (ex.toString().contains("session is down") || ex.toString().contains("socket write error”")) {
+                if (ex.toString().contains(Messages.SESSION_DOWN_MSG) || ex.toString().contains(Messages.SOCKET_WRITE_ERR_MSG)) {
                     isUploadNew = false;
                     putStatusMode = ChannelSftp.RESUME;
                     reconnect();
@@ -228,12 +228,12 @@ public class FileTransfer extends Connections {
                 channel.connect();
             }
             ChannelSftp channelSftp = (ChannelSftp) channel;
-            if (source.contains("$HOME")) {
-                source = source.replace("$HOME", channelSftp.getHome());
+            if (source.contains(FTConstants.HOME)) {
+                source = source.replace(FTConstants.HOME, channelSftp.getHome());
             }
             SftpATTRS attrs = channelSftp.lstat(source);
             if (attrs == null) {
-                System.out.println("Given file / folder  not present at the mentioned path");
+                System.out.println(Messages.FILE_NOT_FOUND_MSG);
                 return;
             }
             if (attrs.isDir()) {
@@ -284,7 +284,7 @@ public class FileTransfer extends Connections {
                     }
                 }, getStatusMode);
             } catch (JSchException | SftpException ex) {
-                if (ex.toString().contains("session is down") || ex.toString().contains("socket write error”")) {
+                if (ex.toString().contains(Messages.SESSION_DOWN_MSG) || ex.toString().contains(Messages.SOCKET_WRITE_ERR_MSG)) {
                     isDownloadNew = false;
                     getStatusMode = ChannelSftp.RESUME;
                     reconnect();
