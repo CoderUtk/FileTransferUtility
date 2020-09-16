@@ -15,4 +15,6 @@ public class Messages {
     public static final String FILE_NOT_FOUND_MSG = "Given file / folder  not present at the mentioned path";
     public static final String SESSION_DOWN_MSG = "session is down";
     public static final String SOCKET_WRITE_ERR_MSG = "socket write error";
+    public static final String ENCRYPT_FAILED = "Unable to encrypt : ";
+    public static final String DECRYPT_FAILED = "Unable to decrypt : ";
 }

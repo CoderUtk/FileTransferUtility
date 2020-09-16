@@ -173,9 +173,9 @@ public class FileTransferUIController extends FXMLComponents {
     }
 
     public void testConnection(ActionEvent event) {
-        connectionStatus.setText(Messages.CONNECTING_MSG);
         try {
             FileTransfer connectionObj = initiateTransfer();
+            connectionStatus.setText(Messages.CONNECTING_MSG);
             connectionObj.connect();
             connectionStatus.setTextFill(Color.web(FTConstants.GREEN_COLOR));
             connectionStatus.setText(Messages.SUCCESS_MSG);

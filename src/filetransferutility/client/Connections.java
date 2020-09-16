@@ -1,6 +1,7 @@
 package filetransferutility.client;
 
 import filetransferutility.main.FTConstants;
+import filetransferutility.utils.Utils;
 import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -39,9 +40,15 @@ public class Connections {
         username = (String) connectionJSONObj.get(FTConstants.USERNAME);
         hostname = (String) connectionJSONObj.get(FTConstants.HOST);
         port = (String) connectionJSONObj.get(FTConstants.PORT);
-        password = (String) connectionJSONObj.get(FTConstants.PASSWORD);
-        passphrase = (String) connectionJSONObj.get(FTConstants.PASSPHRASE);
         keyFileLocation = (String) connectionJSONObj.get(FTConstants.KEY_FILE);
+        Object passwordObj = connectionJSONObj.get(FTConstants.PASSWORD);
+        if (passwordObj != null) {
+            password = Utils.getDecryptedString((String) passwordObj);
+        }
+        Object passphraseObj = connectionJSONObj.get(FTConstants.PASSPHRASE);
+        if (passphraseObj != null) {
+            passphrase = Utils.getDecryptedString((String) passphraseObj);
+        }
     }
 
     public void getConnections() throws IOException, ParseException {
@@ -54,6 +61,8 @@ public class Connections {
     }
 
     public void addConnection(String serverType, String connectionName, String username, String host, String port, String passkey, String keyFileName) throws IOException {
+
+        String encryptedPassKey = Utils.getEncryptedString(passkey);
         this.username = username;
         hostname = host;
         this.port = port;
@@ -73,8 +82,10 @@ public class Connections {
         newConnection.put(FTConstants.USERNAME, this.username);
         newConnection.put(FTConstants.HOST, hostname);
         newConnection.put(FTConstants.PORT, this.port);
-        newConnection.put(FTConstants.PASSWORD, password);
-        newConnection.put(FTConstants.PASSPHRASE, passphrase);
+        if (password != null)
+            newConnection.put(FTConstants.PASSWORD, encryptedPassKey);
+        if (passphrase != null)
+            newConnection.put(FTConstants.PASSPHRASE, encryptedPassKey);
         newConnection.put(FTConstants.KEY_FILE, keyFileLocation);
         jsonObj.put(connectionName, newConnection);
         try (FileWriter writer = new FileWriter(FTConstants.CONNECTIONS_FILE)) {

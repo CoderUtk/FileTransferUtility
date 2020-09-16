@@ -31,5 +31,14 @@ public class FTConstants {
     public static final String KEY_FILE = "KeyFile";
     public static final String GREEN_COLOR = "#00cc99";
     public static final String RED_COLOR = "#ff0000";
+    public static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
+    public static final String CHARSET = "UTF-8";
+    public static final String SECRET_KEY = "coder_utk";
+    public static final String SALT = "030920";
+    public static final String SHA_512 = "PBKDF2WithHmacSHA512";
+    public static final String AES_ENCRYPTION = "AES";
+    public static final int ITERATION_COUNT = 40000;
+    public static final  int KEY_LENGTH = 128;
+
 
 }
